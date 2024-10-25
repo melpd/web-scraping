@@ -18,10 +18,11 @@ format:
 
 ## Beautiful Soup
 
+- Beautiful Soup was created in 2004 by Leonard Richardson
+- The Beautiful Soup Python Library is used to web-scrape from HTML and XML files
 
 
 ## Selenium
-
 
 
 
@@ -34,7 +35,13 @@ format:
 # An Example Using Weather and NYC Crash Data
 
 
-# An Important Note on Data Ethics
+# Data Ethics
+
+## Why can Web-Scraping be un-ethical
+- Just because you can web-scrape doesn’t always mean you should
+- In order to be ethical data scientists, always be careful of where you are getting the data from. Not all websites allow you to scrape data
+- If you send too many requests at once, you can crash the website!
+
 
 # Conclusion
 
@@ -42,19 +49,16 @@ format:
 
 This presentation has covered:
 
-- Creating slides in a Revealjs presentation
-- Adding various content to slides
-- Basic ways to customize slides
+- What Web Scraping is
+- How to Web Scrape in Python
+- How to Web Scrape Ethically
 
-It would be impossible to describe all the capabilities of Revealjs in one presentation. This presentation is meant to provide an introduction to the broad functionality of Revealjs.
 
 ## Further Reading
 
-For more information about creating Revealjs presentations:
+For more information about Beautiful Soup:
 
-- [Presentations -- Quarto](https://quarto.org/docs/presentations/)
-- [Revealjs -- Quarto](https://quarto.org/docs/presentations/revealjs/)
-- [Presenting Slides -- Quarto](https://quarto.org/docs/presentations/revealjs/presenting.html)
+- [Beautiful Soup Documentation](https://beautiful-soup-4.readthedocs.io/en/latest/)
 
 For a useful guide on fundamental markdown syntax:
 
