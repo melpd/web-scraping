@@ -5,44 +5,56 @@ format:
     revealjs:
         slide-number: true
         preview-links: true
-        theme: default
+        theme: solarized
 ---
 
 ## What is Web-Scraping
 
-- Web-Scraping is an automated technique used to collect information from websites
-- Not all data can be easily downloaded from websites. Web scraping is used to extract large amounts of data from websites
-  without having to copy and paste
-- Applications of web-scraping: sentiment analysis on social media, market research
+- Web scraping is an automated process used to gather data from websites.
+- Web scraping allows us to access and collect large amounts of data directly from web pages if the information is not avalible for download.
+- Websites are primarily structured with HTML (Hypertext Markup Language), which organizes and displays content. Web scrapers 
+  parse through this HTML code to identify and extract relevant information.
+- Applications of web-scraping: sentiment analysis on social media, market research, e-commerce
 
 # How to Web-Scrape with Python
 
 ## Beautiful Soup
 
-- Beautiful Soup was created in 2004 by Leonard Richardson
-- The Beautiful Soup Python Library is used to web-scrape from HTML and XML files
-- Beautiful soup can be installed using pip install beautifulsoup4
+- The Beautiful Soup Python Library simplifies the process of parsing and navigating HTML and XML documents, making it easier to 
+  extract data from websites.
+- Beautiful soup can be installed using 
+```{bash}
+pip install beautifulsoup4
+```
+
+- Beautiful Soup is ideal for scraping data from static websites. Static websites do not change based on user actions or require server-side interactions to update content dynamically.
 
 
 ## Selenium
 
-- Selenium was creates in 2004 by John Higgins
-- Selenium can be installed using pip install selenium
-- You also need to install a WebDriver (ChromeDriver, EdgeDriver, etc)
+- Selenium is used for web browser automation and dynamic websites
+- Dynamic sites often use backend programming to pull data from a database, customize it, and render it in real time based on user requests. This makes Selenium a key tool when you need to interact with elements, scroll pages, or handle pop-ups to reach the data you need.
+- Selenium can be installed using 
+```{bash}
+pip install selenium
+```
+
+- To control a web browser, Selenium requires a WebDriver which acts as the bridge between Selenium and the browser. Download the driver that matches your browser version and operating system, and point Selenium to the driver’s path when you initialize it.
 
 
 ## Beautiful Soup vs Selenium
-- Beautiful Soup works best with static websites (meaning that there is no server that updates the content and no database)
-- Selenium works best with dynamic websites
-- Beautiful Soup is easier to use and install
-- Selenium tends to more compatible with more websites since more websites are dynamic
+- Selenium is better for interacting with dynamic web content that loads JavaScript or requires actions like clicking, scrolling, 
+  or filling forms
+- Selenium can be slower and more resource-intensive since it opens a browser window to simulate real user actions.
+- Beautiful Soup is lightweight, easy to learn, and perfect for working with static HTML content.
+- Beautiful Soup is more limited when it comes to dynamic websites, which are much more common nowadays
 
-## A Step-by Step Guide
+## A Step-by Step Guide to Web-Scraping
 - Find the website URL with the information you want to select
-- Send an HTTP request, using the requests package (generally 200-299 means the request has been granted and 
-  400-499 means that your request is not allowed)
-- Find the part of the website you want to extract using inspect
-- Parse through the website's HTML content
+- Use the requests package in Python to send an HTTP request to the URL. A successful response status code (200-299) indicates 
+  that the request was granted, while a status code in the 400-499 range indicates an error.
+- Use the "Inspect" tool in your browser to identify the tags, classes, or IDs associated with the data you want to extract.
+- Use a parsing library like Beautiful Soup or Selenium to process the HTML response
 - Clean and store the relevant infomation
 
 
@@ -270,6 +282,7 @@ This one works!
 - Never scrape from a website that requires login or payment
 - Spread out the time of the requests in order to prevent the website from crashing
 - Always be mindful of what kind of information you are trying to collect and if it is private information/intellectual property
+- Check a websites terms of servive to see if you are allowed to scrape
 
 
 # Conclusion
@@ -285,6 +298,9 @@ This presentation has covered:
 
 ## Further Reading
 
+- https://scrapfly.io/blog/web-scraping-with-selenium-and-python/
+- https://www.browserstack.com/guide/web-scraping-using-selenium-python
+
 For more information about Beautiful Soup:
 
 - [Beautiful Soup Documentation](https://beautiful-soup-4.readthedocs.io/en/latest/)
@@ -293,4 +309,4 @@ For a useful guide on fundamental markdown syntax:
 
 - [Markdown Basics -- Quarto](https://quarto.org/docs/authoring/markdown-basics.html)
 
-# THANK YOU!!!
+# THANK YOU!
