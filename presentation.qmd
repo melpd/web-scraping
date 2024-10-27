@@ -13,6 +13,7 @@ format:
 - Web-Scraping is an automated technique used to collect information from websites
 - Not all data can be easily downloaded from websites. Web scraping is used to extract large amounts of data from websites
   without having to copy and paste
+- Applications of web-scraping: sentiment analysis on social media, market research
 
 # How to Web-Scrape with Python
 
@@ -20,18 +21,29 @@ format:
 
 - Beautiful Soup was created in 2004 by Leonard Richardson
 - The Beautiful Soup Python Library is used to web-scrape from HTML and XML files
+- Beautiful soup can be installed using pip install beautifulsoup4
 
 
 ## Selenium
 
+- Selenium was creates in 2004 by John Higgins
+- Selenium can be installed using pip install selenium
+- You also need to install a WebDriver (ChromeDriver, EdgeDriver, etc)
 
 
 ## Beautiful Soup vs Selenium
 - Beautiful Soup works best with static websites (meaning that there is no server that updates the content and no database)
 - Selenium works best with dynamic websites
-- Beautiful Soup is easier to use
-- Selenium tends to more compatible with more websites
-## Steps to Web-Scrape
+- Beautiful Soup is easier to use and install
+- Selenium tends to more compatible with more websites since more websites are dynamic
+
+## A Step-by Step Guide
+- Find the website URL with the information you want to select
+- Send an HTTP request, using the requests package (generally 200-299 means the request has been granted and 
+  400-499 means that your request is not allowed)
+- Find the part of the website you want to extract using inspect
+- Parse through the website's HTML content
+- Clean and store the relevant infomation
 
 
 # An Example Using Weather and NYC Crash Data
@@ -131,6 +143,7 @@ if weather_data is not None:
 
 
 ```{python}
+#Selenium Version
 import time
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
@@ -251,6 +264,12 @@ This one works!
 - Just because you can web-scrape doesn’t always mean you should
 - In order to be ethical data scientists, always be careful of where you are getting the data from. Not all websites allow you to scrape data
 - If you send too many requests at once, you can crash the website!
+
+## Some Tips to Help You Scrape Ethically
+
+- Never scrape from a website that requires login or payment
+- Spread out the time of the requests in order to prevent the website from crashing
+- Always be mindful of what kind of information you are trying to collect and if it is private information/intellectual property
 
 
 # Conclusion
