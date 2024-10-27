@@ -37,6 +37,7 @@ format:
 # An Example Using Weather and NYC Crash Data
 
 ```{python}
+#Beautiful Soup Version
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -136,121 +137,112 @@ from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 import pandas as pd
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def scrape_weekly_weather_wunderground(date_str="2024-6-30"):
-    # Construct the URL with the specified date
     url = f"https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/{date_str}"
     
-    # Setup Edge options
     edge_options = Options()
-    edge_options.add_argument("--headless")  # Run in headless mode for automation
+    edge_options.add_argument("--headless")
     edge_options.add_argument("--disable-gpu")
     
-    # Path to your EdgeDriver
     edge_driver_path = 'C:/Users/mpdes/Downloads/edgedriver_win64/msedgedriver.exe'
     
-    # Create a new instance of the Edge driver
     service = Service(edge_driver_path)
     driver = webdriver.Edge(service=service, options=edge_options)
     
-    # Open the URL
-    driver.get(url)
-    time.sleep(5)  # Allow some time for the page to load
-    
-    # Try to find the table using Selenium
     try:
-        table_container = driver.find_element(By.CSS_SELECTOR, 'div.observation-table')
-        table = table_container.find_element(By.CSS_SELECTOR, 'table.days')
+        driver.get(url)
+        time.sleep(5)  # Wait for the page to load completely
+
+        # Find the main data container
+        table = driver.find_element(By.CSS_SELECTOR, "table.days")
         
-        # Data containers
+        # Initialize lists for each data type
         dates = []
         max_temps = []
         min_temps = []
-        humidity_avg = []
-        wind_speed_max = []
-        pressure_max = []
-        precipitation = []
+        humidity_values = []
+        wind_speeds = []
+        pressure_values = []
+        precip_values = []
+
+        # Get all rows
+        rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
         
-        # Extract rows from the table (each row represents a day)
-        rows = table.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
-        for row in rows:
-            cells = row.find_elements(By.TAG_NAME, 'td')
-            if len(cells) < 12:
-                continue
-            
-            # Extract date and ensure clean formatting
-            date = cells[0].text.strip().replace('\n', ' ')
-            dates.append(date)
-            
-            # Extract and clean other metrics
-            max_temp = cells[1].text.strip().replace('\n', ' ')
-            min_temp = cells[2].text.strip().replace('\n', ' ')
-            humidity = cells[5].text.strip().replace('\n', ' ')
-            wind_max = cells[7].text.strip().replace('\n', ' ')
-            pressure = cells[9].text.strip().replace('\n', ' ')
-            precip = cells[11].text.strip().replace('\n', ' ')
-            
-            max_temps.append(max_temp)
-            min_temps.append(min_temp)
-            humidity_avg.append(humidity)
-            wind_speed_max.append(wind_max)
-            pressure_max.append(pressure)
-            precipitation.append(precip)
-        
-        # Create a DataFrame with the data
-        weather_df = pd.DataFrame({
-            'Date': dates,
-            'Max Temperature': max_temps,
-            'Min Temperature': min_temps,
-            'Humidity (Avg)': humidity_avg,
-            'Wind Speed (Max)': wind_speed_max,
-            'Pressure (Max)': pressure_max,
-            'Precipitation': precipitation
+        # Process the first row which contains all the dates
+        date_row = rows[0].text.split('\n')
+        dates = [date for date in date_row if date.isdigit()][:7]  # Get first 7 dates
+
+        # Find temperature values (rows 10-16 contain the actual temperature data)
+        temp_rows = rows[10:17]  # Get rows 10-16
+        for row in temp_rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) >= 3:
+                max_temps.append(cells[0].text.strip())
+                min_temps.append(cells[2].text.strip())
+
+        # Find humidity values (rows 18-24)
+        humidity_rows = rows[18:25]
+        for row in humidity_rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) >= 2:
+                humidity_values.append(cells[1].text.strip())
+
+        # Find wind speed values (rows 26-32)
+        wind_rows = rows[26:33]
+        for row in wind_rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) >= 1:
+                wind_speeds.append(cells[0].text.strip())
+
+        # Find pressure values (rows 42-48)
+        pressure_rows = rows[42:49]
+        for row in pressure_rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) >= 1:
+                pressure_values.append(cells[0].text.strip())
+
+        # Find precipitation values (rows 50-56)
+        precip_rows = rows[50:57]
+        for row in precip_rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) >= 1:
+                precip_values.append(cells[0].text.strip())
+
+        # Create DataFrame
+        weather_data = pd.DataFrame({
+            'Date': [f'{date}' for date in dates],
+            'Max Temperature (°F)': max_temps,
+            'Min Temperature (°F)': min_temps,
+            'Humidity (%)': humidity_values,
+            'Wind Speed (mph)': wind_speeds,
+            'Pressure (in)': pressure_values,
+            'Precipitation (in)': precip_values
         })
+
+        return weather_data
+
     except Exception as e:
         print(f"An error occurred: {e}")
-        weather_df = None
+        return None
     finally:
         driver.quit()
-    
-    return weather_df
 
-# Specify the date to start the week (June 30, 2024)
+# Run the scraper
 weather_data = scrape_weekly_weather_wunderground(date_str="2024-6-30")
 
-# Display the result if data is found
 if weather_data is not None:
+    print("\nWeather Data:")
     print(weather_data)
-
-```
-
-```{python}
-import requests
-from bs4 import BeautifulSoup
-
-# URL for historical weather data on timeanddate.com
-url = "https://www.timeanddate.com/weather/usa/new-york/historic?month=6&year=2024"
-
-# Make a request to the page
-response = requests.get(url)
-
-# Check if request was successful
-if response.status_code == 200:
-    # Parse the page content
-    soup = BeautifulSoup(response.content, "html.parser")
     
-    # Example: Find weather data in tables or specific divs
-    weather_table = soup.find("table.wt-his", {"class": "zebra tb-wt fw va-m tb-hover sticky-en"})
-    for row in weather_table.find_all("tr")[1:]:  # Skip the header row
-        cols = row.find_all("td")
-        date = cols[0].get_text(strip=True)
-        temp = cols[1].get_text(strip=True)
-        description = cols[2].get_text(strip=True)
-        print(f"Date: {date}, Temp: {temp}, Description: {description}")
-else:
-    print("Failed to retrieve the data. Status code:", response.status_code)
+    # Optionally save to CSV
+    weather_data.to_csv('weather_data.csv', index=False)
 
 ```
+
+This one works!
 
 
 # Data Ethics
