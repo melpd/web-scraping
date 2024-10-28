@@ -39,7 +39,7 @@ pip install beautifulsoup4
 pip install selenium
 ```
 
-- To control a web browser, Selenium requires a WebDriver which acts as the bridge between Selenium and the browser. Download the driver that matches your browser version and operating system, and point Selenium to the driver’s path when you initialize it.
+- To control a web browser, Selenium requires a WebDriver. Download the driver that matches your browser version and operating system, and point Selenium to the driver’s path when you initialize it.
 
 
 ## Beautiful Soup vs Selenium
@@ -51,8 +51,7 @@ pip install selenium
 
 ## A Step-by Step Guide to Web-Scraping
 - Find the website URL with the information you want to select
-- Use the requests package in Python to send an HTTP request to the URL. A successful response status code (200-299) indicates 
-  that the request was granted, while a status code in the 400-499 range indicates an error.
+- Use the requests package in Python to send an HTTP request to the URL. Generally 200-299 means the request has been granted and 400-499 means that your request is not allowed
 - Use the "Inspect" tool in your browser to identify the tags, classes, or IDs associated with the data you want to extract.
 - Use a parsing library like Beautiful Soup or Selenium to process the HTML response
 - Clean and store the relevant infomation
@@ -261,14 +260,159 @@ weather_data = scrape_weekly_weather_wunderground(date_str="2024-6-30")
 if weather_data is not None:
     print("\nWeather Data:")
     print(weather_data)
-    
-    # Optionally save to CSV
-    weather_data.to_csv('weather_data.csv', index=False)
 
 ```
 
 This one works!
 
+```{python}
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Define a function to scrape weather data for a specific city
+def scrape_weather(city="new-york"):
+    # Construct the URL for the weather page
+    url = f"https://www.timeanddate.com/weather/usa/{city}/historic"
+    
+    # Headers to simulate a browser request
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+    }
+    
+    # Send a request to the URL
+    response = requests.get(url, headers=headers)
+    
+    # Check if the request was successful
+    if response.status_code != 200:
+        print(f"Failed to retrieve data: Status code {response.status_code}")
+        return None
+    
+    # Parse the page content
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Find the table containing weather data
+    table = soup.find("table", {"class": "zebra tb-wt fw va-m tb-hover"})
+    if not table:
+        print("Weather data table not found.")
+        return None
+    
+    # Prepare lists to store the data
+    dates = []
+    temperatures = []
+    weather_conditions = []
+    
+    # Loop through the table rows and extract data
+    rows = table.find_all("tr")
+    for row in rows[1:]:  # Skip the header row
+        cells = row.find_all("td")
+        if len(cells) >= 3:
+            # Extract date, temperature, and weather condition
+            date = cells[0].get_text(strip=True)
+            temperature = cells[1].get_text(strip=True)
+            condition = cells[2].get_text(strip=True)
+            
+            # Append data to lists
+            dates.append(date)
+            temperatures.append(temperature)
+            weather_conditions.append(condition)
+    
+    # Create a DataFrame with the scraped data
+    weather_data = pd.DataFrame({
+        "Date": dates,
+        "Temperature": temperatures,
+        "Condition": weather_conditions
+    })
+    
+    return weather_data
+
+# Run the function and print the weather data
+city = "new-york"
+weather_data = scrape_weather(city)
+if weather_data is not None:
+    print(weather_data)
+
+```
+
+```{python}
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Function to scrape weather data for a specific date range
+def scrape_weather_for_dates(start_date, end_date, city="new-york"):
+    # Prepare a list to hold all dates in the specified range
+    date_list = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
+    
+    # Lists to store weather data
+    all_dates = []
+    temperatures = []
+    weather_conditions = []
+    
+    for date in date_list:
+        # Format date for URL (e.g., 2024-06-30)
+        date_str = date.strftime("%Y-%m-%d")
+        
+        # Construct the URL for the specific date's weather page
+        url = f"https://www.timeanddate.com/weather/usa/{city}/historic?month={date.month}&year={date.year}&hd={date_str}"
+        
+        # Headers to simulate a browser request
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+        }
+        print(url)
+        # Send a request to the URL
+        response = requests.get(url, headers=headers)
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            print(f"Failed to retrieve data for {date_str}: Status code {response.status_code}")
+            continue
+        
+        # Parse the page content
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Locate the table containing weather data (adjust the class name as needed)
+        table = soup.find("table", {"class": "zebra tb-wt fw va-m tb-hover"})
+        if not table:
+            print(f"Weather data table not found for {date_str}.")
+            continue
+        
+        # Extract data for this date
+        for row in table.find_all("tr")[1:]:  # Skip the header row
+            cells = row.find_all("td")
+            if len(cells) >= 3:
+                # Store each piece of data in lists
+                time_of_day = cells[0].get_text(strip=True)
+                temperature = cells[1].get_text(strip=True)
+                condition = cells[2].get_text(strip=True)
+                
+                # Append data to lists
+                all_dates.append(f"{date_str} {time_of_day}")
+                temperatures.append(temperature)
+                weather_conditions.append(condition)
+    
+    # Create a DataFrame with the scraped data
+    weather_data = pd.DataFrame({
+        "Date": all_dates,
+        "Temperature": temperatures,
+        "Condition": weather_conditions
+    })
+    
+    return weather_data
+
+# Set start and end dates for June 30, 2024 - July 6, 2024
+start_date = datetime(2024, 6, 30)
+end_date = datetime(2024, 7, 6)
+
+# Run the function and print the weather data
+weather_data = scrape_weather_for_dates(start_date, end_date, city="new-york")
+if weather_data is not None:
+    print(weather_data)
+
+
+```
 
 # Data Ethics
 
