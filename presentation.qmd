@@ -57,103 +57,12 @@ pip install selenium
 - Clean and store the relevant infomation
 
 
-# An Example Using Weather and NYC Crash Data
+# An Example Using NYC Crash Data
 
+## Selenium and Weather Data
 ```{python}
-#Beautiful Soup Version
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
+#| echo: true
 
-# Function to scrape weekly weather data from Wunderground
-def scrape_weekly_weather_wunderground(date_str="2024-6-30"):
-    # Construct the URL with the specified date
-    url = f"https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/{date_str}"
-
-    # Headers to simulate a browser request
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-    }
-
-    # Make a request to the URL
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        print(f"Failed to retrieve data: Status code {response.status_code}")
-        return None
-
-    # Parse the page
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Locate the observation table container
-    table_container = soup.select_one('div.observation-table.ng-star-inserted')
-
-    if not table_container:
-        print("Observation table container not found.")
-        return None
-
-    # Locate the table inside the container
-    table = table_container.select_one('table.days.ng-star-inserted')
-
-    if not table:
-        print("Weather data table not found within the container.")
-        return None
-
-    # Data containers
-    dates = []
-    max_temps = []
-    min_temps = []
-    humidity_avg = []
-    wind_speed_max = []
-    pressure_max = []
-    precipitation = []
-
-    # Extract rows from the table (each row represents a day)
-    rows = table.find('tbody').find_all('tr')
-
-    for row in rows:
-        # Extract date
-        date = row.find_all('td')[0].get_text(strip=True)
-        dates.append(date)
-
-        # Extract metrics (replace indices as needed based on table columns)
-        max_temp = row.find_all('td')[1].get_text(strip=True)  # Max temperature
-        min_temp = row.find_all('td')[2].get_text(strip=True)  # Min temperature
-        humidity = row.find_all('td')[5].get_text(strip=True)  # Avg humidity
-        wind_max = row.find_all('td')[7].get_text(strip=True)  # Max wind speed
-        pressure = row.find_all('td')[9].get_text(strip=True)  # Max pressure
-        precip = row.find_all('td')[11].get_text(strip=True)   # Total precipitation
-
-        max_temps.append(max_temp)
-        min_temps.append(min_temp)
-        humidity_avg.append(humidity)
-        wind_speed_max.append(wind_max)
-        pressure_max.append(pressure)
-        precipitation.append(precip)
-
-    # Create a DataFrame with the data
-    weather_df = pd.DataFrame({
-        'Date': dates,
-        'Max Temperature': max_temps,
-        'Min Temperature': min_temps,
-        'Humidity (Avg)': humidity_avg,
-        'Wind Speed (Max)': wind_speed_max,
-        'Pressure (Max)': pressure_max,
-        'Precipitation': precipitation
-    })
-
-    return weather_df
-
-# Specify the date to start the week (June 30, 2024)
-weather_data = scrape_weekly_weather_wunderground(date_str="2024-6-30")
-
-# Display the result if data is found
-if weather_data is not None:
-    print(weather_data)
-
-```
-
-
-```{python}
 #Selenium Version
 import time
 from selenium import webdriver
@@ -263,154 +172,56 @@ if weather_data is not None:
 
 ```
 
-This one works!
+## Beautiful Soup and NYPD Precincts
 
 ```{python}
+#| echo: true
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-# Define a function to scrape weather data for a specific city
-def scrape_weather(city="new-york"):
-    # Construct the URL for the weather page
-    url = f"https://www.timeanddate.com/weather/usa/{city}/historic"
-    
-    # Headers to simulate a browser request
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-    }
-    
-    # Send a request to the URL
-    response = requests.get(url, headers=headers)
-    
-    # Check if the request was successful
-    if response.status_code != 200:
-        print(f"Failed to retrieve data: Status code {response.status_code}")
-        return None
-    
-    # Parse the page content
+# URL of the NYPD precincts page
+url = "https://www.nyc.gov/site/nypd/bureaus/patrol/precincts-landing.page"
+
+# Send a GET request to the page
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+}
+response = requests.get(url, headers=headers)
+
+# Check if the request was successful
+if response.status_code != 200:
+    print(f"Failed to retrieve page: Status code {response.status_code}")
+else:
+    # Parse the HTML content
     soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find the table with class "rt" which holds the precinct data
+    table = soup.find("table", {"class": "rt"})
     
-    # Find the table containing weather data
-    table = soup.find("table", {"class": "zebra tb-wt fw va-m tb-hover"})
-    if not table:
-        print("Weather data table not found.")
-        return None
+    # Lists to hold the extracted data
+    precinct_names = []
+    addresses = []
     
-    # Prepare lists to store the data
-    dates = []
-    temperatures = []
-    weather_conditions = []
-    
-    # Loop through the table rows and extract data
-    rows = table.find_all("tr")
-    for row in rows[1:]:  # Skip the header row
-        cells = row.find_all("td")
-        if len(cells) >= 3:
-            # Extract date, temperature, and weather condition
-            date = cells[0].get_text(strip=True)
-            temperature = cells[1].get_text(strip=True)
-            condition = cells[2].get_text(strip=True)
-            
-            # Append data to lists
-            dates.append(date)
-            temperatures.append(temperature)
-            weather_conditions.append(condition)
-    
-    # Create a DataFrame with the scraped data
-    weather_data = pd.DataFrame({
-        "Date": dates,
-        "Temperature": temperatures,
-        "Condition": weather_conditions
+    # Extract each row of the table (each row corresponds to one precinct)
+    for row in table.find_all("tr"):
+        # Find the "Precinct" and "Address" columns by data-label attribute
+        precinct_cell = row.find("td", {"data-label": "Precinct"})
+        address_cell = row.find("td", {"data-label": "Address"})
+        
+        # If both cells are found, store their text content
+        if precinct_cell and address_cell:
+            precinct_names.append(precinct_cell.get_text(strip=True))
+            addresses.append(address_cell.get_text(strip=True))
+
+    # Create a DataFrame with the extracted data
+    precincts_df = pd.DataFrame({
+        "Precinct": precinct_names,
+        "Address": addresses
     })
-    
-    return weather_data
 
-# Run the function and print the weather data
-city = "new-york"
-weather_data = scrape_weather(city)
-if weather_data is not None:
-    print(weather_data)
-
-```
-
-```{python}
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
-from datetime import datetime, timedelta
-
-# Function to scrape weather data for a specific date range
-def scrape_weather_for_dates(start_date, end_date, city="new-york"):
-    # Prepare a list to hold all dates in the specified range
-    date_list = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
-    
-    # Lists to store weather data
-    all_dates = []
-    temperatures = []
-    weather_conditions = []
-    
-    for date in date_list:
-        # Format date for URL (e.g., 2024-06-30)
-        date_str = date.strftime("%Y-%m-%d")
-        
-        # Construct the URL for the specific date's weather page
-        url = f"https://www.timeanddate.com/weather/usa/{city}/historic?month={date.month}&year={date.year}&hd={date_str}"
-        
-        # Headers to simulate a browser request
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-        }
-        print(url)
-        # Send a request to the URL
-        response = requests.get(url, headers=headers)
-        
-        # Check if the request was successful
-        if response.status_code != 200:
-            print(f"Failed to retrieve data for {date_str}: Status code {response.status_code}")
-            continue
-        
-        # Parse the page content
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Locate the table containing weather data (adjust the class name as needed)
-        table = soup.find("table", {"class": "zebra tb-wt fw va-m tb-hover"})
-        if not table:
-            print(f"Weather data table not found for {date_str}.")
-            continue
-        
-        # Extract data for this date
-        for row in table.find_all("tr")[1:]:  # Skip the header row
-            cells = row.find_all("td")
-            if len(cells) >= 3:
-                # Store each piece of data in lists
-                time_of_day = cells[0].get_text(strip=True)
-                temperature = cells[1].get_text(strip=True)
-                condition = cells[2].get_text(strip=True)
-                
-                # Append data to lists
-                all_dates.append(f"{date_str} {time_of_day}")
-                temperatures.append(temperature)
-                weather_conditions.append(condition)
-    
-    # Create a DataFrame with the scraped data
-    weather_data = pd.DataFrame({
-        "Date": all_dates,
-        "Temperature": temperatures,
-        "Condition": weather_conditions
-    })
-    
-    return weather_data
-
-# Set start and end dates for June 30, 2024 - July 6, 2024
-start_date = datetime(2024, 6, 30)
-end_date = datetime(2024, 7, 6)
-
-# Run the function and print the weather data
-weather_data = scrape_weather_for_dates(start_date, end_date, city="new-york")
-if weather_data is not None:
-    print(weather_data)
-
+    # Display the DataFrame
+    print(precincts_df)
 
 ```
 
