@@ -3,56 +3,69 @@ title: "Web-Scraping"
 subtitle: "A Presentation by Melanie Desroches"
 format:
     revealjs:
+        self-contained: true
         slide-number: true
         preview-links: true
         theme: solarized
 ---
-
+#                                                                    
 ## What is Web-Scraping
 
 - Web scraping is an automated process used to gather data from websites.
-- Web scraping allows us to access and collect large amounts of data directly from web pages if the information is not avalible for download.
-- Websites are primarily structured with HTML (Hypertext Markup Language), which organizes and displays content. Web scrapers 
-  parse through this HTML code to identify and extract relevant information.
-- Applications of web-scraping: sentiment analysis on social media, market research, e-commerce
+- Web scraping allows us to access and collect large amounts of data 
+  directly from web pages if the information is not avalible for download.
+- Websites are primarily structured with HTML (Hypertext Markup Language), 
+  which organizes and displays content. Web scrapers parse through this 
+  HTML code to identify and extract relevant information.
+- Applications of web-scraping: sentiment analysis on social media, market 
+  research, e-commerce
 
 # How to Web-Scrape with Python
 
 ## Beautiful Soup
 
-- The Beautiful Soup Python Library simplifies the process of parsing and navigating HTML and XML documents, making it easier to 
-  extract data from websites.
+- The Beautiful Soup Python Library simplifies the process of parsing and 
+  navigating HTML and XML documents, making it easier to extract data from 
+  websites.
 - Beautiful soup can be installed using 
 ```{bash}
 pip install beautifulsoup4
 ```
 
-- Beautiful Soup is ideal for scraping data from static websites. Static websites do not change based on user actions or require server-side interactions to update content dynamically.
+- Beautiful Soup is ideal for scraping data from static websites. Static 
+  websites do not change based on user actions or require server-side 
+  interactions to update content dynamically.
 
 
 ## Selenium
 
 - Selenium is used for web browser automation and dynamic websites
-- Dynamic sites often use backend programming to pull data from a database, customize it, and render it in real time based on user requests. This makes Selenium a key tool when you need to interact with elements, scroll pages, or handle pop-ups to reach the data you need.
+- Dynamic sites often use backend programming to pull data from a database, 
+  customize it, and render it in real time based on user requests.
 - Selenium can be installed using 
 ```{bash}
 pip install selenium
 ```
 
-- To control a web browser, Selenium requires a WebDriver. Download the driver that matches your browser version and operating system, and point Selenium to the driver’s path when you initialize it.
+- To control a web browser, Selenium requires a WebDriver. Download the driver 
+  that matches your browser version and operating system
 
 
 ## Beautiful Soup vs Selenium
-- Selenium is better for interacting with dynamic web content that loads JavaScript or requires actions like clicking, scrolling, 
-  or filling forms
-- Selenium can be slower and more resource-intensive since it opens a browser window to simulate real user actions.
-- Beautiful Soup is lightweight, easy to learn, and perfect for working with static HTML content.
-- Beautiful Soup is more limited when it comes to dynamic websites, which are much more common nowadays
+- Selenium is better for interacting with dynamic web content that loads JavaScript 
+  or requires actions like clicking, scrolling, or filling forms
+- Selenium can be slower and more resource-intensive since it opens a browser window 
+  to simulate real user actions.
+- Beautiful Soup is lightweight, easy to learn, and perfect for working with static 
+  HTML content.
+- Beautiful Soup is more limited when it comes to dynamic websites, which are much 
+  more common nowadays
 
 ## A Step-by Step Guide to Web-Scraping
 - Find the website URL with the information you want to select
-- Use the requests package in Python to send an HTTP request to the URL. Generally 200-299 means the request has been granted and 400-499 means that your request is not allowed
-- Use the "Inspect" tool in your browser to identify the tags, classes, or IDs associated with the data you want to extract.
+- Use the requests package in Python to send an HTTP request to the URL
+- Use the "Inspect" tool in your browser to identify the tags, classes, or IDs 
+  associated with the data you want to extract.
 - Use a parsing library like Beautiful Soup or Selenium to process the HTML response
 - Clean and store the relevant infomation
 
@@ -229,14 +242,16 @@ else:
 
 ## Why can Web-Scraping be un-ethical
 - Just because you can web-scrape doesn’t always mean you should
-- In order to be ethical data scientists, always be careful of where you are getting the data from. Not all websites allow you to scrape data
+- In order to be ethical data scientists, always be careful of where you are 
+  getting the data from. Not all websites allow you to scrape data
 - If you send too many requests at once, you can crash the website!
 
 ## Some Tips to Help You Scrape Ethically
 
 - Never scrape from a website that requires login or payment
 - Spread out the time of the requests in order to prevent the website from crashing
-- Always be mindful of what kind of information you are trying to collect and if it is private information/intellectual property
+- Always be mindful of what kind of information you are trying to collect and if 
+  it is private information/intellectual property
 - Check a websites terms of servive to see if you are allowed to scrape
 
 
