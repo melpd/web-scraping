@@ -8,7 +8,7 @@ format:
         preview-links: true
         theme: solarized
 ---
-#                                                                    
+
 ## What is Web-Scraping
 
 - Web scraping is an automated process used to gather data from websites.
@@ -72,121 +72,9 @@ pip install selenium
 
 # An Example Using NYC Crash Data
 
-## Selenium and Weather Data
-```{python}
-#| echo: true
+# Beautiful Soup and NYPD Precincts
 
-#Selenium Version
-import time
-from selenium import webdriver
-from selenium.webdriver.edge.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.options import Options
-import pandas as pd
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-def scrape_weekly_weather_wunderground(date_str="2024-6-30"):
-    url = f"https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/{date_str}"
-    
-    edge_options = Options()
-    edge_options.add_argument("--headless")
-    edge_options.add_argument("--disable-gpu")
-    
-    edge_driver_path = 'C:/Users/mpdes/Downloads/edgedriver_win64/msedgedriver.exe'
-    
-    service = Service(edge_driver_path)
-    driver = webdriver.Edge(service=service, options=edge_options)
-    
-    try:
-        driver.get(url)
-        time.sleep(5)  # Wait for the page to load completely
-
-        # Find the main data container
-        table = driver.find_element(By.CSS_SELECTOR, "table.days")
-        
-        # Initialize lists for each data type
-        dates = []
-        max_temps = []
-        min_temps = []
-        humidity_values = []
-        wind_speeds = []
-        pressure_values = []
-        precip_values = []
-
-        # Get all rows
-        rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
-        
-        # Process the first row which contains all the dates
-        date_row = rows[0].text.split('\n')
-        dates = [date for date in date_row if date.isdigit()][:7]  # Get first 7 dates
-
-        # Find temperature values (rows 10-16 contain the actual temperature data)
-        temp_rows = rows[10:17]  # Get rows 10-16
-        for row in temp_rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) >= 3:
-                max_temps.append(cells[0].text.strip())
-                min_temps.append(cells[2].text.strip())
-
-        # Find humidity values (rows 18-24)
-        humidity_rows = rows[18:25]
-        for row in humidity_rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) >= 2:
-                humidity_values.append(cells[1].text.strip())
-
-        # Find wind speed values (rows 26-32)
-        wind_rows = rows[26:33]
-        for row in wind_rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) >= 1:
-                wind_speeds.append(cells[0].text.strip())
-
-        # Find pressure values (rows 42-48)
-        pressure_rows = rows[42:49]
-        for row in pressure_rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) >= 1:
-                pressure_values.append(cells[0].text.strip())
-
-        # Find precipitation values (rows 50-56)
-        precip_rows = rows[50:57]
-        for row in precip_rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) >= 1:
-                precip_values.append(cells[0].text.strip())
-
-        # Create DataFrame
-        weather_data = pd.DataFrame({
-            'Date': [f'{date}' for date in dates],
-            'Max Temperature (°F)': max_temps,
-            'Min Temperature (°F)': min_temps,
-            'Humidity (%)': humidity_values,
-            'Wind Speed (mph)': wind_speeds,
-            'Pressure (in)': pressure_values,
-            'Precipitation (in)': precip_values
-        })
-
-        return weather_data
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return None
-    finally:
-        driver.quit()
-
-# Run the scraper
-weather_data = scrape_weekly_weather_wunderground(date_str="2024-6-30")
-
-if weather_data is not None:
-    print("\nWeather Data:")
-    print(weather_data)
-
-```
-
-## Beautiful Soup and NYPD Precincts
-
+## Finding the URL and sending the request
 ```{python}
 #| echo: true
 import requests
@@ -203,39 +91,156 @@ headers = {
 response = requests.get(url, headers=headers)
 
 # Check if the request was successful
+print(response.status_code)
 if response.status_code != 200:
     print(f"Failed to retrieve page: Status code {response.status_code}")
-else:
-    # Parse the HTML content
-    soup = BeautifulSoup(response.text, 'html.parser')
+```
 
-    # Find the table with class "rt" which holds the precinct data
-    table = soup.find("table", {"class": "rt"})
+## Parsing the Table
+```{python}
+#| echo: true
+# Parse the HTML content
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Find the table with class "rt" which holds the precinct data
+table = soup.find("table", {"class": "rt"})
     
-    # Lists to hold the extracted data
-    precinct_names = []
-    addresses = []
+# Lists to hold the extracted data
+precinct_names = []
+addresses = []
     
-    # Extract each row of the table (each row corresponds to one precinct)
-    for row in table.find_all("tr"):
-        # Find the "Precinct" and "Address" columns by data-label attribute
-        precinct_cell = row.find("td", {"data-label": "Precinct"})
-        address_cell = row.find("td", {"data-label": "Address"})
+# Extract each row of the table (each row corresponds to one precinct)
+for row in table.find_all("tr"):
+  # Find the "Precinct" and "Address" columns by data-label attribute
+  precinct_cell = row.find("td", {"data-label": "Precinct"})
+  address_cell = row.find("td", {"data-label": "Address"})
         
-        # If both cells are found, store their text content
-        if precinct_cell and address_cell:
-            precinct_names.append(precinct_cell.get_text(strip=True))
-            addresses.append(address_cell.get_text(strip=True))
+  # If both cells are found, store their text content
+  if precinct_cell and address_cell:
+    precinct_names.append(precinct_cell.get_text(strip=True))
+    addresses.append(address_cell.get_text(strip=True))
 
-    # Create a DataFrame with the extracted data
-    precincts_df = pd.DataFrame({
-        "Precinct": precinct_names,
-        "Address": addresses
-    })
+# Create a DataFrame with the extracted data
+precincts_df = pd.DataFrame({
+  "Precinct": precinct_names,
+  "Address": addresses
+})
 
-    # Display the DataFrame
-    print(precincts_df)
+# Display the DataFrame
+print(precincts_df)
+```
 
+# Selenium and Weather Data
+
+## Set-Up Selenium and the WebDriver
+```{python}
+#| echo: true
+import time
+from selenium import webdriver
+from selenium.webdriver.edge.service import Service
+from selenium.webdriver.edge.options import Options
+
+# Configure headless Edge browser
+edge_options = Options()
+edge_options.add_argument("--headless")
+edge_options.add_argument("--disable-gpu")
+
+# Set the path for Edge driver
+edge_driver_path = 'C:/Users/mpdes/Downloads/edgedriver_win64/msedgedriver.exe'
+service = Service(edge_driver_path)
+driver = webdriver.Edge(service=service, options=edge_options)
+```
+
+## Go to the Page and Find the Target data
+```{python}
+#| echo: true
+# Define the target URL
+url = f"https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/2024-6-30"
+
+# Load the page
+driver.get(url)
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Wait for table to load
+wait = WebDriverWait(driver, 15)
+table = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.days")))
+```
+
+## Collect the data
+```{python}
+#| echo: true
+# Initialize lists for each data type
+dates = []
+max_temps = []
+min_temps = []
+humidity_values = []
+wind_speeds = []
+pressure_values = []
+precip_values = []
+
+# Get all rows
+rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
+        
+# Process the first row which contains all the dates
+date_row = rows[0].text.split('\n')
+dates = [date for date in date_row if date.isdigit()][:7]  # Get first 7 dates
+
+# Find temperature values (rows 10-16 contain the actual temperature data)
+temp_rows = rows[10:17]  # Get rows 10-16
+for row in temp_rows:
+  cells = row.find_elements(By.TAG_NAME, "td")
+  if len(cells) >= 3:
+    max_temps.append(cells[0].text.strip())
+    min_temps.append(cells[2].text.strip())
+
+# Find humidity values (rows 18-24)
+humidity_rows = rows[18:25]
+for row in humidity_rows:
+  cells = row.find_elements(By.TAG_NAME, "td")
+  if len(cells) >= 2:
+    humidity_values.append(cells[1].text.strip())
+
+# Find wind speed values (rows 26-32)
+wind_rows = rows[26:33]
+for row in wind_rows:
+  cells = row.find_elements(By.TAG_NAME, "td")
+  if len(cells) >= 1:
+    wind_speeds.append(cells[0].text.strip())
+
+# Find pressure values (rows 42-48)
+pressure_rows = rows[42:49]
+for row in pressure_rows:
+  cells = row.find_elements(By.TAG_NAME, "td")
+  if len(cells) >= 1:
+    pressure_values.append(cells[0].text.strip())
+
+# Find precipitation values (rows 50-56)
+precip_rows = rows[50:57]
+for row in precip_rows:
+  cells = row.find_elements(By.TAG_NAME, "td")
+  if len(cells) >= 1:
+    precip_values.append(cells[0].text.strip())
+```
+
+## Store the Collected Data
+```{python}
+#| echo: true
+import pandas as pd
+
+# Create DataFrame
+weather_data = pd.DataFrame({
+    'Date': dates,
+    'Max Temperature (°F)': max_temps,
+    'Min Temperature (°F)': min_temps,
+    'Humidity (%)': humidity_values,
+    'Wind Speed (mph)': wind_speeds,
+    'Pressure (in)': pressure_values,
+    'Precipitation (in)': precip_values
+})
+print(weather_data)
 ```
 
 # Data Ethics
