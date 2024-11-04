@@ -63,7 +63,7 @@ pip install selenium
 
 ## A Step-by Step Guide to Web-Scraping
 - Find the website URL with the information you want to select
-- end an HTTP request to the URL
+- Send an HTTP request to the URL and confirm you have access to the page
 - Use the "Inspect" tool in your browser to identify the tags, classes, or IDs 
   associated with the data you want to extract.
 - Use a parsing library like Beautiful Soup or Selenium to process the HTML response
@@ -140,7 +140,6 @@ print(precincts_df)
 ## Set-Up Selenium and the WebDriver
 ```{python}
 #| echo: true
-import time
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.edge.options import Options
@@ -188,7 +187,19 @@ precip_values = []
 
 # Get all rows
 rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
-        
+for row in rows:
+    # Get all 'td' elements in the row
+    columns = row.find_elements(By.TAG_NAME, "td")  
+    # Extract text from each column
+    row_data = [col.text.strip() for col in columns]  
+    # Print the content of the row
+    print("Row Data:", row_data)  # This will print the content of each row
+```
+
+## Storing the Data
+
+```{python}
+#| echo: true
 # Process the first row which contains all the dates
 date_row = rows[0].text.split('\n')
 dates = [date for date in date_row if date.isdigit()][:7]  # Get first 7 dates
@@ -230,7 +241,7 @@ for row in precip_rows:
     precip_values.append(cells[0].text.strip())
 ```
 
-## Store the Collected Data
+## Creating a DataFrame
 ```{python}
 #| echo: true
 import pandas as pd
@@ -251,6 +262,7 @@ weather_data = pd.DataFrame({
 ```{python}
 #| echo: true
 print(weather_data)
+driver.quit()
 ```
 
 # Data Ethics
@@ -276,7 +288,7 @@ print(weather_data)
 
 This presentation has covered:
 
-- What Web Scraping is
+- What Web Scraping is and why it is important to data scientists
 - How to Web Scrape in Python using Selenium and Beautiful Soup
 - How to Web Scrape Ethically
 
@@ -287,6 +299,7 @@ This presentation has covered:
 - https://www.browserstack.com/guide/web-scraping-using-selenium-python
 - https://www.geeksforgeeks.org/implementing-web-scraping-python-beautiful-soup/
 - https://beautiful-soup-4.readthedocs.io/en/latest/
+- https://forage.ai/blog/legal-and-ethical-issues-in-web-scraping-what-you-need-to-know/ 
 - https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/2024-6-30 
 - https://www.nyc.gov/site/nypd/bureaus/patrol/precincts-landing.page
 
