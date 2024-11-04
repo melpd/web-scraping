@@ -63,7 +63,7 @@ pip install selenium
 
 ## A Step-by Step Guide to Web-Scraping
 - Find the website URL with the information you want to select
-- Use the requests package in Python to send an HTTP request to the URL
+- end an HTTP request to the URL
 - Use the "Inspect" tool in your browser to identify the tags, classes, or IDs 
   associated with the data you want to extract.
 - Use a parsing library like Beautiful Soup or Selenium to process the HTML response
@@ -119,7 +119,12 @@ for row in table.find_all("tr"):
   if precinct_cell and address_cell:
     precinct_names.append(precinct_cell.get_text(strip=True))
     addresses.append(address_cell.get_text(strip=True))
+```
 
+## Storing the Data
+
+```{python}
+#| echo: true
 # Create a DataFrame with the extracted data
 precincts_df = pd.DataFrame({
   "Precinct": precinct_names,
@@ -240,6 +245,11 @@ weather_data = pd.DataFrame({
     'Pressure (in)': pressure_values,
     'Precipitation (in)': precip_values
 })
+```
+
+## 
+```{python}
+#| echo: true
 print(weather_data)
 ```
 
@@ -267,7 +277,7 @@ print(weather_data)
 This presentation has covered:
 
 - What Web Scraping is
-- How to Web Scrape in Python
+- How to Web Scrape in Python using Selenium and Beautiful Soup
 - How to Web Scrape Ethically
 
 
@@ -275,13 +285,9 @@ This presentation has covered:
 
 - https://scrapfly.io/blog/web-scraping-with-selenium-and-python/
 - https://www.browserstack.com/guide/web-scraping-using-selenium-python
-
-For more information about Beautiful Soup:
-
-- [Beautiful Soup Documentation](https://beautiful-soup-4.readthedocs.io/en/latest/)
-
-For a useful guide on fundamental markdown syntax:
-
-- [Markdown Basics -- Quarto](https://quarto.org/docs/authoring/markdown-basics.html)
+- https://www.geeksforgeeks.org/implementing-web-scraping-python-beautiful-soup/
+- https://beautiful-soup-4.readthedocs.io/en/latest/
+- https://www.wunderground.com/history/weekly/us/ny/new-york-city/KLGA/date/2024-6-30 
+- https://www.nyc.gov/site/nypd/bureaus/patrol/precincts-landing.page
 
 # THANK YOU!
